@@ -36,9 +36,6 @@ from lightgbm import LGBMClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.base import BaseEstimator
 
-#import mlflow
-#from mlflow.pyfunc import PythonModel
-
 import os
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -409,34 +406,10 @@ class LGBMWrapper(BaseEstimator):
 
     def predict(self, X):
         return [proba[1] > self.threshold for proba in self.lgbm_model.predict_proba(X)]
-    
+
     def predict_proba(self, X):
         return self.lgbm_model.predict_proba(X)
-    
-"""class PredictProbaWrapper(PythonModel):
 
-    def __init__(self):
-        self.model = None
-
-    def load_context(self, context):
-        #Charge le modèle sauvegardé
-        self.model = mlflow.sklearn.load_model(context.artifacts["model_path"])
-
-    def predict(self, context, model_input, params=None):
-        #Modifie la propriété du predict pour retourner un predict_proba à la place
-        params = params or {"predict_method": "predict"}
-        predict_method = params.get("predict_method")
-
-        if predict_method == "predict":
-            return self.model.predict(model_input)
-        elif predict_method == "predict_proba":
-            return self.model.predict_proba(model_input)
-        elif predict_method == "predict_log_proba":
-            return self.model.predict_log_proba(model_input)
-        else:
-            raise ValueError(f"The prediction method '{predict_method}' is not supported.")
-"""
-    
 
 def bank_scoring(y_test, y_pred, cost_lost=-10, gain_win=1):
     """
@@ -447,7 +420,7 @@ def bank_scoring(y_test, y_pred, cost_lost=-10, gain_win=1):
     """
     # Extraire les valeurs issues de notre classification.
     tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
-    
+
     # On calcul le gain de notre modèle de classification.
     potantial_gain = (tn*gain_win) + (fn*cost_lost)
 
@@ -457,5 +430,5 @@ def bank_scoring(y_test, y_pred, cost_lost=-10, gain_win=1):
 
     # On compare le gain de notre modèle avec le gain total possible.
     score = potantial_gain/max_gain_possible
-    
+
     return score
